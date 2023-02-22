@@ -11,7 +11,8 @@ import SwiftUI
 struct Fetch_ChallangeApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            DessertList()
+                .environment(\.managedObjectContext, DessertProvider.shared.container.viewContext)
         }
     }
 }
