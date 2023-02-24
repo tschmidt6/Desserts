@@ -12,6 +12,7 @@ struct DessertRow: View {
     
     var body: some View {
         HStack {
+            ThumbnailView(url: dessert.strMealThumb)
             VStack(alignment: .leading) {
                 Text(dessert.strMeal)
                     .font(.title3)
