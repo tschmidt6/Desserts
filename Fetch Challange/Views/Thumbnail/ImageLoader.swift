@@ -26,7 +26,7 @@ class ImageLoader: ObservableObject {
     func loadAsync(url: NSURL) async -> UIImage? {
         // Check for a cached image
         if let cachedImage = image(url: url) {
-            logger.debug("Image found in cache")
+            //logger.debug("Image found in cache")
             return cachedImage
         }
         

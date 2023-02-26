@@ -10,8 +10,6 @@ import OSLog
 
 class DessertProvider {
     
-    let url = URL(string: "https://themealdb.com/api/json/v1/1/filter.php?c=Dessert")!
-    
     // MARK: Logging
 
     let logger = Logger(subsystem: "com.example.Fetch-Challenge.Desserts", category: "persistence")
@@ -106,25 +104,14 @@ class DessertProvider {
 
     /// Fetches the desserts feed from the remote server, and imports it into Core Data.
     func fetchDesserts() async throws {
-        let session = URLSession.shared
-        guard let (data, response) = try? await session.data(from: url),
-              let httpResponse = response as? HTTPURLResponse,
-              httpResponse.statusCode == 200
-        else {
-            logger.debug("Failed to received valid response and/or data.")
-            throw DessertError.missingData
-        }
-
         do {
-            // Decode the GeoJSON into a data model.
-            let jsonDecoder = JSONDecoder()
-            jsonDecoder.dateDecodingStrategy = .secondsSince1970
-            let geoJSON = try jsonDecoder.decode(DessertApiObjectWrapper.self, from: data)
+            let desserts = try await DessertClient.shared.fetchDesserts()
 
-            // Import the GeoJSON into Core Data.
             logger.debug("Start importing data to the store...")
-            try await importDesserts(from: geoJSON.meals)
+            try await importDesserts(from: desserts)
             logger.debug("Finished importing data.")
+        } catch is NetworkError {
+            throw DessertError.invalidResponse
         } catch {
             throw DessertError.wrongDataFormat(error: error)
         }
@@ -168,45 +155,6 @@ class DessertProvider {
             return false
         })
         return batchInsertRequest
-    }
-
-    /// Synchronously deletes given records in the Core Data store with the specified object IDs.
-    func deleteDesserts(identifiedBy objectIDs: [NSManagedObjectID]) {
-        let viewContext = container.viewContext
-        logger.debug("Start deleting data from the store...")
-
-        viewContext.perform {
-            objectIDs.forEach { objectID in
-                let dessert = viewContext.object(with: objectID)
-                viewContext.delete(dessert)
-            }
-        }
-
-        logger.debug("Successfully deleted data.")
-    }
-
-    /// Asynchronously deletes records in the Core Data store with the specified `Dessert` managed objects.
-    func deleteDesserts(_ desserts: [Dessert]) async throws {
-        let objectIDs = desserts.map { $0.objectID }
-        let taskContext = newTaskContext()
-        // Add name and author to identify source of persistent history changes.
-        taskContext.name = "deleteContext"
-        taskContext.transactionAuthor = "deleteDesserts"
-        logger.debug("Start deleting data from the store...")
-
-        try await taskContext.perform {
-            // Execute the batch delete.
-            let batchDeleteRequest = NSBatchDeleteRequest(objectIDs: objectIDs)
-            guard let fetchResult = try? taskContext.execute(batchDeleteRequest),
-                  let batchDeleteResult = fetchResult as? NSBatchDeleteResult,
-                  let success = batchDeleteResult.result as? Bool, success
-            else {
-                self.logger.debug("Failed to execute batch delete request.")
-                throw DessertError.batchDeleteError
-            }
-        }
-
-        logger.debug("Successfully deleted data.")
     }
 
     func fetchPersistentHistory() async {

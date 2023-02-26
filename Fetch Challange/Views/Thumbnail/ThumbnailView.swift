@@ -17,7 +17,7 @@ struct ThumbnailView: View {
             if thumbnail == nil {
                 ProgressView().frame(width: 50, height: 50)
             } else {
-                thumbnail!.resizable().frame(width: 50, height: 50).scaledToFit()
+                thumbnail!.resizable().frame(width: 50, height: 50).clipShape(Circle()).scaledToFit()
             }
         }
         .onAppear {

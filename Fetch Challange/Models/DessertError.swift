@@ -9,7 +9,7 @@ import Foundation
 
 enum DessertError: Error {
     case wrongDataFormat(error: Error)
-    case missingData
+    case invalidResponse
     case creationError
     case batchInsertError
     case batchDeleteError
@@ -22,8 +22,8 @@ extension DessertError: LocalizedError {
         switch self {
         case .wrongDataFormat(let error):
             return NSLocalizedString("Could not digest the fetched data. \(error.localizedDescription)", comment: "")
-        case .missingData:
-            return NSLocalizedString("Found and will discard a dessert missing a valid strMeal, strMealThumb, or idMeal.", comment: "")
+        case .invalidResponse:
+            return NSLocalizedString("Failed to receive valid response from server.", comment: "")
         case .creationError:
             return NSLocalizedString("Failed to create a new Dessert object.", comment: "")
         case .batchInsertError:

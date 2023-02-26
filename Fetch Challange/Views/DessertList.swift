@@ -45,16 +45,17 @@ struct DessertList: View {
                             Text("Loading Desserts...")
                             Spacer()
                         } else {
-                            Text("\(desserts.count) Desserts")
+                            if desserts.count == 0 {
+                                Text("Refresh data")
+                            } else {
+                                Text("\(desserts.count) Desserts")
+                            }
                         }
                     }
                     Spacer()
                 }
             }
             EmptyView()
-        }
-        .onAppear {
-            
         }
         .alert(isPresented: $hasError, error: error) { }
     }
